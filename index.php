@@ -2,6 +2,7 @@
 require 'config.php';
 
 // Check if the user is logged in
+
 if(!empty($_SESSION["id"])) {
     $id = $_SESSION["id"];
     $result = mysqli_query($conn, "SELECT * FROM users WHERE id=$id");
