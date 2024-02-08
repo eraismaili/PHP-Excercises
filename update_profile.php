@@ -10,34 +10,62 @@ if (!isset($_SESSION["login"]) || $_SESSION["login"] !== true) {
 // Include your database connection file if you haven't already
 // require_once 'config.php';
 
-// Dummy error variables, you can define them if needed
-$idErr = $nameErr = $lastnameErr = $addressErr = $cityErr = $numberErr = $birthdateErr = $emailErr = $passwordErr = "";
-
 // Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // You need to add your database update logic here
-    
-    // Example code to update the name
+    // Update each field individually
     if (!empty($_POST["name"])) {
-        // Sanitize the input and update the session
         $_SESSION["name"] = $_POST["name"];
-        
-        // Update the database - you need to implement this
-        // $name = mysqli_real_escape_string($conn, $_POST["name"]);
-        // $id = $_SESSION["id"];
-        // $sql = "UPDATE users SET name='$name' WHERE id='$id'";
-        // if (mysqli_query($conn, $sql)) {
-        //     // Update successful
-        // } else {
-        //     echo "Error updating record: " . mysqli_error($conn);
-        // }
+    }
+    if (!empty($_POST["lastname"])) {
+        $_SESSION["lastname"] = $_POST["lastname"];
+    }
+    if (!empty($_POST["address"])) {
+        $_SESSION["address"] = $_POST["address"];
+    }
+    if (!empty($_POST["city"])) {
+        $_SESSION["city"] = $_POST["city"];
+    }
+    if (!empty($_POST["number"])) {
+        $_SESSION["number"] = $_POST["number"];
+    }
+    if (!empty($_POST["birthdate"])) {
+        $_SESSION["birthdate"] = $_POST["birthdate"];
+    }
+    if (!empty($_POST["email"])) {
+        $_SESSION["email"] = $_POST["email"];
     }
 
-    // You need to repeat this for each field you want to update
-    // Update the logic for each field accordingly
-}
+    // Update the database
+    // Assuming you're using mysqli for database operations
+    // Replace 'your_db_connection' with your actual database connection object
+    $conn=mysqli_connect("localhost", "root", "", "users");
 
-// Redirect back to the profile page after updating
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
+    $id = $_SESSION["id"];
+    $name = $_SESSION["name"];
+    $lastname = $_SESSION["lastname"];
+    $address = $_SESSION["address"];
+    $city = $_SESSION["city"];
+    $number = $_SESSION["number"];
+    $birthdate = $_SESSION["birthdate"];
+    $email = $_SESSION["email"];
+
+    $sql = "UPDATE users SET name='$name', lastname='$lastname', address='$address', city='$city', number='$number', birthdate='$birthdate', email='$email' WHERE id='$id'";
+
+    if ($conn->query($sql) === TRUE) {
+       $message = 'Success';
+    } else {
+        $message = "Error updating record: " . $conn->error;
+    }
+
+    $conn->close();
+}
 header("Location: profile.php");
+// Redirect back to the profile page after updating
+
 exit();
 ?>
