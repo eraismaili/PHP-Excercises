@@ -31,6 +31,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (empty($_POST["number"])) {
         $numberErr = "Number is required";
+    } elseif (!preg_match("/^\+?[0-9]{7,15}$/", $_POST["number"])) {
+        $numberErr = "Invalid phone number format";
+    } elseif (preg_match('/[A-Za-z]/', $_POST["number"])) {
+        $numberErr = "Phone number should not contain words";
     } else {
         $number = $_POST["number"];
     }
@@ -40,38 +44,56 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $birthdate = $_POST["birthdate"];
     }
-    if (empty($_POST["email"])) {
-        $emailErr = "Email is required";
-    } else {
-        $email = $_POST["email"];
-    }
+        // Validation for email
+        if (empty($_POST["email"])) {
+            $emailErr = "Email is required";
+        } elseif (!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
+            $emailErr = "Invalid email format";
+        } elseif (preg_match('/\b[A-Za-z]+\b/', $_POST["email"])) {
+            $emailErr = "Email should not contain a name";
+        } else {
+            $email = $_POST["email"];
+        }
+
     if (empty($_POST["password"])) {
         $passwordErr = "Password is required";
+    } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{6,}$/', $_POST["password"])) {
+        $passwordErr = "Password must contain at least 6 characters with 1 uppercase letter, 1 lowercase letter, and 1 special character";
     } else {
         $password = $_POST["password"];
     }
 
-    if (empty($nameErr) && empty($lastnameErr) && empty($addressErr) && empty($cityErr) && empty($numberErr) && empty($birthdateErr) && empty($emailErr) && empty($passwordErr)) {
+    // Check if a file is selected
+    if ($_FILES['profilepicture']['name']) {
+        // File upload path
+        $targetDir = "uploads/";
+        $fileName = basename($_FILES["profilepicture"]["name"]);
+        $targetFilePath = $targetDir . $fileName;
+        $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
+        
+        // Upload file to the server
+        if (move_uploaded_file($_FILES["profilepicture"]["tmp_name"], $targetFilePath)) {
+            // Hash the password
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // Hash the password
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-        $duplicate = mysqli_query($conn, "SELECT * FROM users WHERE email='$email'");
-        if (mysqli_num_rows($duplicate) > 0) {
-            echo "<script> alert('Email Has Already Taken'); </script>";
-        } else {
-            $query = "INSERT INTO users (name, lastname, address, city, number, birthdate, email, password ) VALUES ('$name', '$lastname', '$address', '$city', '$number', '$birthdate', '$email','$hashed_password' )";
+            // Insert image file name into database
+            $query = "INSERT INTO users (name, lastname, address, city, number, birthdate, email, password, profilepicture) VALUES ('$name', '$lastname', '$address', '$city', '$number', '$birthdate', '$email', '$hashed_password', '$fileName')";
 
             if (mysqli_query($conn, $query)) {
                 $registrationSuccess = true;
             } else {
                 echo "Error: " . $query . "<br>" . mysqli_error($conn);
             }
+        } else {
+            echo "Sorry, there was an error uploading your file.";
         }
-
+    } else {
+        echo 'Please select a file.';
     }
 }
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,6 +105,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <!-- jQuery UI -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -157,10 +181,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="container">
         <h2>Registration</h2>
+
         <?php if ($registrationSuccess): ?>
             <div class="success">You have successfully registered</div>
         <?php endif; ?>
-        <form action="" method="post" autocomplete="off">
+        <form action="" method="post" autocomplete="off" enctype="multipart/form-data">
             <label for="name">Name:</label>
             <input type="text" name="name" id="name" value="<?php echo isset($name) ? $name : ''; ?>">
             <span class="error"><?php echo $nameErr;?></span>
@@ -192,6 +217,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <label for="password">Password:</label>
             <input type="password" name="password" id="password">
             <span class="error"><?php echo $passwordErr;?></span>
+
+            <label for="profilepicture">Profile Picture:</label>
+            <input type="file" name="profilepicture" id="profilepicture">
 
             <button type="submit" name="submit">Register</button>
         </form>

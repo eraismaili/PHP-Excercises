@@ -111,8 +111,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <div class="container">
         <h2>User Profile</h2>
-    
-        
+
+  <!-- Add profile picture display -->
+<?php if(isset($_SESSION["profilepicture"])): ?>
+    <img src="<?php echo $_SESSION["profilepicture"]; ?>" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto; display: block;">
+<?php endif; ?>
+
+    <form action="update_profile.php" method="post" autocomplete="off">
         <form action="update_profile.php" method="post" autocomplete="off">
             <label for="id">ID:</label>
             <input type="text" name="id" id="id" value="<?php echo $_SESSION["id"] ?>" readonly>
@@ -140,7 +145,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             <label for="password">Password:</label>
             <input type="password" name="password" id="password" value="">
-            
+            <button onclick="window.location.href='change_password.php'">Change Password</button>
+
             
             <!-- Add a confirm password field if needed -->
             
