@@ -2,10 +2,15 @@
 require 'config.php';
 
 if (isset($_POST["submit"])) {
-    $nameemail = $_POST["nameemail"];
-    $password = $_POST["password"];
+    $email = mysqli_real_escape_string($conn, $_POST["email"]); // Escape input to prevent SQL injection
+    $password = mysqli_real_escape_string($conn, $_POST["password"]);
 
-    $result = mysqli_query($conn, "SELECT * FROM users WHERE name ='$nameemail' OR email = '$nameemail'");
+    $result = mysqli_query($conn, "SELECT * FROM users WHERE email = '$email'");
+    
+    if (!$result) {
+        die("Query failed: " . mysqli_error($conn));
+    }
+
     $row = mysqli_fetch_assoc($result);
 
     if (mysqli_num_rows($result) > 0) {
@@ -24,6 +29,7 @@ if (isset($_POST["submit"])) {
             $_SESSION["number"] = $row["number"];
             $_SESSION["birthdate"] = $row["birthdate"];
             $_SESSION["email"] = $row["email"];
+            $_SESSION["password"] = $row["password"];
             
             // Redirect to profile page
             header("Location: profile.php");
@@ -99,8 +105,8 @@ if (isset($_POST["submit"])) {
     <div class="container">
         <h2>Login</h2>
         <form action="" method="post" autocomplete="off">
-            <label for="nameemail">Name or Email:</label>
-            <input type="text" name="nameemail" id="nameemail" required value="">
+            <label for="email">Name or Email:</label>
+            <input type="text" name="email" id="email" required value="">
             
             <label for="password">Password:</label>
             <input type="password" name="password" id="password" required value="">

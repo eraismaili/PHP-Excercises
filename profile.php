@@ -6,14 +6,26 @@ if (!isset($_SESSION["login"]) || $_SESSION["login"] !== true) {
     header("Location: login.php");
     exit();
 }
+// Include database connection and configuration
+require 'config.php';
+
+// Query to retrieve the profile picture path from the database
+$user_id = $_SESSION["id"];
+$query = "SELECT profile_picture FROM users WHERE id = '$user_id'";
+$result = mysqli_query($conn, $query);
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+    $profile_picture = $row['profile_picture'];
+}
 
 // Dummy error variables, you can define them if needed
-$nameErr = $lastnameErr = $addressErr = $cityErr = $numberErr = $birthdateErr = $emailErr = $passwordErr = "";
+$nameErr = $lastnameErr = $addressErr = $cityErr = $numberErr = $birthdateErr = $emailErr = $passwordErr = $oldPassErr="";
 $updateMessage = "";
 
 // Handling form submission here, if needed
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Validate form fields
+    
     if (empty($_POST["name"])) {
         $nameErr = "Name is required";
     }
@@ -42,12 +54,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($_POST["password"])) {
         $lastnameErr = "Password is required";
     }
-    if (empty($nameErr) && empty($lastnameErr) && empty($addressErr) && empty($cityErr) && empty($numberErr) && empty($birthdateErr) && empty($emailErr) && empty($passwordErr)) {
+    
+    if (empty($nameErr) && empty($lastnameErr) && empty($addressErr) && empty($cityErr) && empty($numberErr) && empty($birthdateErr) && empty($emailErr) && empty($oldPassErr)) {
         // Your update logic here
 
         // After successful update, set success message
         $updateMessage = "Profile updated successfully";
     }
+    
 }
 ?>
 
@@ -113,11 +127,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <h2>User Profile</h2>
 
   <!-- Add profile picture display -->
-<?php if(isset($_SESSION["profilepicture"])): ?>
-    <img src="<?php echo $_SESSION["profilepicture"]; ?>" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto; display: block;">
+  <?php if(isset($profile_picture)): ?>
+    <img src="uploads/<?php echo $profile_picture; ?>" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto; display: block;">
 <?php endif; ?>
 
-    <form action="update_profile.php" method="post" autocomplete="off">
+
         <form action="update_profile.php" method="post" autocomplete="off">
             <label for="id">ID:</label>
             <input type="text" name="id" id="id" value="<?php echo $_SESSION["id"] ?>" readonly>
@@ -143,12 +157,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <label for="email">Email:</label>
             <input type="text" name="email" id="email" value="<?php echo $_SESSION["email"] ?>">
             
-            <label for="password">Password:</label>
-            <input type="password" name="password" id="password" value="">
-            <button onclick="window.location.href='change_password.php'">Change Password</button>
+            <label for="password">Old Password:</label>
+            <input type="password" name="old_password" id="old_password" value="">
 
-            
-            <!-- Add a confirm password field if needed -->
+            <label for="password">New Password:</label>
+            <input type="password" name="new_password" id="new_password" value="">
+
             
             <button type="submit">Update Profile</button>
         </form>

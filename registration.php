@@ -29,12 +29,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $city = $_POST["city"];
     }
 
+    if (empty($_POST["password"]) || (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{6,}$/', $_POST["password"]))) {
+        $passwordErr = "Password must contain at least 6 characters with 1 uppercase letter, 1 lowercase letter, and 1 special character";
+    } else {
+        $password = $_POST["password"];
+    }
+
     if (empty($_POST["number"])) {
         $numberErr = "Number is required";
     } elseif (!preg_match("/^\+?[0-9]{7,15}$/", $_POST["number"])) {
-        $numberErr = "Invalid phone number format";
-    } elseif (preg_match('/[A-Za-z]/', $_POST["number"])) {
-        $numberErr = "Phone number should not contain words";
+        $numberErr = "Invalid phone number format"; 
     } else {
         $number = $_POST["number"];
     }
@@ -44,25 +48,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $birthdate = $_POST["birthdate"];
     }
-        // Validation for email
-        if (empty($_POST["email"])) {
-            $emailErr = "Email is required";
-        } elseif (!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
-            $emailErr = "Invalid email format";
-        } elseif (preg_match('/\b[A-Za-z]+\b/', $_POST["email"])) {
-            $emailErr = "Email should not contain a name";
+    if (empty($_POST["email"])) {
+        $emailErr = "Email is required";
+    } elseif (!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
+        $emailErr = "Invalid email format";
+    } else {
+        $email = mysqli_real_escape_string($conn, $_POST["email"]);
+        
+        // Check if the email is already registered
+        $check_query = "SELECT * FROM users WHERE email='$email'";
+        $result = mysqli_query($conn, $check_query);
+        if (mysqli_num_rows($result) > 0) {
+            $emailErr = "This email is already registered.";
         } else {
             $email = $_POST["email"];
         }
-
-    if (empty($_POST["password"])) {
-        $passwordErr = "Password is required";
-    } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{6,}$/', $_POST["password"])) {
-        $passwordErr = "Password must contain at least 6 characters with 1 uppercase letter, 1 lowercase letter, and 1 special character";
-    } else {
-        $password = $_POST["password"];
     }
 
+        // me i check neser error variables jon empty
+    if (empty($nameErr) && empty($lastnameErr) && empty($addressErr) && empty($cityErr) && empty($numberErr) && empty($birthdateErr) && empty($emailErr) && empty($passwordErr)) {
+
+    
     // Check if a file is selected
     if ($_FILES['profilepicture']['name']) {
         // File upload path
@@ -77,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
             // Insert image file name into database
-            $query = "INSERT INTO users (name, lastname, address, city, number, birthdate, email, password, profilepicture) VALUES ('$name', '$lastname', '$address', '$city', '$number', '$birthdate', '$email', '$hashed_password', '$fileName')";
+            $query = "INSERT INTO users (name, lastname, address, city, number, birthdate, email, password, profile_picture) VALUES ('$name', '$lastname', '$address', '$city', '$number', '$birthdate', '$email', '$hashed_password', '$fileName')";
 
             if (mysqli_query($conn, $query)) {
                 $registrationSuccess = true;
@@ -89,7 +95,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     } else {
         echo 'Please select a file.';
-    }
+    } 
+}
+else {
+    echo "Sorry, there was an error .";
+}
 }
 ?>
 

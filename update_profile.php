@@ -34,6 +34,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!empty($_POST["email"])) {
         $_SESSION["email"] = $_POST["email"];
     }
+    if (password_verify($_POST["old_password"], $_SESSION["password"])) {
+    
+        $hashed_password = password_hash($_POST["new_password"], PASSWORD_DEFAULT);
+        $_SESSION["password"] =  $hashed_password ;
+
+ }
 
     // Update the database
     // Assuming you're using mysqli for database operations
@@ -53,12 +59,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $number = $_SESSION["number"];
     $birthdate = $_SESSION["birthdate"];
     $email = $_SESSION["email"];
+    $password = $_SESSION["password"];
 
-    $sql = "UPDATE users SET name='$name', lastname='$lastname', address='$address', city='$city', number='$number', birthdate='$birthdate', email='$email' WHERE id='$id'";
+    $sql = "UPDATE users SET name='$name', lastname='$lastname', address='$address', city='$city', number='$number', birthdate='$birthdate', email='$email',password='$password' WHERE id='$id'";
 
     if ($conn->query($sql) === TRUE) {
        $message = 'Success';
     } else {
+        var_dump('error');
+        die();
         $message = "Error updating record: " . $conn->error;
     }
 
