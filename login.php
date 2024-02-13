@@ -5,6 +5,8 @@ if (isset($_POST["submit"])) {
     $email = mysqli_real_escape_string($conn, $_POST["email"]); // Escape input to prevent SQL injection
     $password = mysqli_real_escape_string($conn, $_POST["password"]);
 
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
     $result = mysqli_query($conn, "SELECT * FROM users WHERE email = '$email'");
     
     if (!$result) {
@@ -104,7 +106,7 @@ if (isset($_POST["submit"])) {
 <body>
     <div class="container">
         <h2>Login</h2>
-        <form action="" method="post" autocomplete="off">
+        <form action="" method="post" autocomplete="on">
             <label for="email">Name or Email:</label>
             <input type="text" name="email" id="email" required value="">
             
