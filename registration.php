@@ -4,104 +4,158 @@ require 'config.php';
 $nameErr = $lastnameErr = $addressErr = $cityErr = $numberErr = $birthdateErr = $emailErr = $passwordErr = "";
 $registrationSuccess = false;
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (empty($_POST["name"])) {
+function validateName($name) {
+    global $nameErr;
+    if (empty($name)) {
         $nameErr = "Name is required";
-    } else {
-        $name = $_POST["name"];
+        return false;
     }
+    return true;
+}
 
-    if (empty($_POST["lastname"])) {
+function validateLastName($lastname) {
+    global $lastnameErr;
+    if (empty($lastname)) {
         $lastnameErr = "Last Name is required";
-    } else {
-        $lastname = $_POST["lastname"];
+        return false;
     }
+    return true;
+}
 
-    if (empty($_POST["address"])) {
+function validateAddress($address) {
+    global $addressErr;
+    if (empty($address)) {
         $addressErr = "Address is required";
-    } else {
-        $address = $_POST["address"];
+        return false;
     }
+    return true;
+}
 
-    if (empty($_POST["city"])) {
+function validateCity($city) {
+    global $cityErr;
+    if (empty($city)) {
         $cityErr = "City is required";
-    } else {
-        $city = $_POST["city"];
+        return false;
     }
+    return true;
+}
 
-    if (empty($_POST["password"]) || (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{6,}$/', $_POST["password"]))) {
+function validatePassword($password) {
+    global $passwordErr;
+    if (empty($password) || (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{6,}$/', $password))) {
         $passwordErr = "Password must contain at least 6 characters with 1 uppercase letter, 1 lowercase letter, and 1 special character";
-    } else {
-        $password = $_POST["password"];
+        return false;
     }
+    return true;
+}
 
-    if (empty($_POST["number"])) {
+function validateNumber($number) {
+    global $numberErr;
+    if (empty($number)) {
         $numberErr = "Number is required";
-    } elseif (!preg_match("/^\+?[0-9]{7,15}$/", $_POST["number"])) {
-        $numberErr = "Invalid phone number format"; 
-    } else {
-        $number = $_POST["number"];
+        return false;
+    } elseif (!preg_match("/^\+?[0-9]{7,15}$/", $number)) {
+        $numberErr = "Invalid phone number format";
+        return false;
     }
-    
-    if (empty($_POST["birthdate"])) {
+    return true;
+}
+
+function validateBirthdate($birthdate) {
+    global $birthdateErr;
+    if (empty($birthdate)) {
         $birthdateErr = "BirthDate is required";
-    } else {
-        $birthdate = $_POST["birthdate"];
+        return false;
     }
-    if (empty($_POST["email"])) {
+    return true;
+}
+
+function validateEmail($email, $conn) {
+    global $emailErr;
+    if (empty($email)) {
         $emailErr = "Email is required";
-    } elseif (!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
+        return false;
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $emailErr = "Invalid email format";
+        return false;
     } else {
-        $email = mysqli_real_escape_string($conn, $_POST["email"]);
-        
+        $email = mysqli_real_escape_string($conn, $email);
+
         // Check if the email is already registered
         $check_query = "SELECT * FROM users WHERE email='$email'";
         $result = mysqli_query($conn, $check_query);
         if (mysqli_num_rows($result) > 0) {
             $emailErr = "This email is already registered.";
-        } else {
-            $email = $_POST["email"];
+            return false;
         }
     }
+    return true;
+}
 
-        // me i check neser error variables jon empty
-    if (empty($nameErr) && empty($lastnameErr) && empty($addressErr) && empty($cityErr) && empty($numberErr) && empty($birthdateErr) && empty($emailErr) && empty($passwordErr)) {
+function registerUser($conn, $name, $lastname, $address, $city, $number, $birthdate, $email, $password, $fileName) {
+    global $registrationSuccess;
+    // Hash the password
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    
-    // Check if a file is selected
+    // Insert image file name into database
+    $query = "INSERT INTO users (name, lastname, address, city, number, birthdate, email, password, profile_picture) VALUES ('$name', '$lastname', '$address', '$city', '$number', '$birthdate', '$email', '$hashed_password', '$fileName')";
+
+    if (mysqli_query($conn, $query)) {
+        $registrationSuccess = true;
+    } else {
+        echo "Error: " . $query . "<br>" . mysqli_error($conn);
+    }
+}
+
+function handleFileUpload() {
     if ($_FILES['profilepicture']['name']) {
         // File upload path
         $targetDir = "uploads/";
         $fileName = basename($_FILES["profilepicture"]["name"]);
         $targetFilePath = $targetDir . $fileName;
         $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
-        
+
         // Upload file to the server
         if (move_uploaded_file($_FILES["profilepicture"]["tmp_name"], $targetFilePath)) {
-            // Hash the password
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-            // Insert image file name into database
-            $query = "INSERT INTO users (name, lastname, address, city, number, birthdate, email, password, profile_picture) VALUES ('$name', '$lastname', '$address', '$city', '$number', '$birthdate', '$email', '$hashed_password', '$fileName')";
-
-            if (mysqli_query($conn, $query)) {
-                $registrationSuccess = true;
-            } else {
-                echo "Error: " . $query . "<br>" . mysqli_error($conn);
-            }
+            return $fileName;
         } else {
             echo "Sorry, there was an error uploading your file.";
+            return null;
         }
     } else {
         echo 'Please select a file.';
-    } 
+        return null;
+    }
 }
-else {
-    echo "Sorry, there was an error .";
-}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $name = $_POST["name"];
+    $lastname = $_POST["lastname"];
+    $address = $_POST["address"];
+    $city = $_POST["city"];
+    $password = $_POST["password"];
+    $number = $_POST["number"];
+    $birthdate = $_POST["birthdate"];
+    $email = $_POST["email"];
+
+    $nameValid = validateName($name);
+    $lastnameValid = validateLastName($lastname);
+    $addressValid = validateAddress($address);
+    $cityValid = validateCity($city);
+    $passwordValid = validatePassword($password);
+    $numberValid = validateNumber($number);
+    $birthdateValid = validateBirthdate($birthdate);
+    $emailValid = validateEmail($email, $conn);
+
+    if ($nameValid && $lastnameValid && $addressValid && $cityValid && $passwordValid && $numberValid && $birthdateValid && $emailValid) {
+        $fileName = handleFileUpload();
+        if ($fileName) {
+            registerUser($conn, $name, $lastname, $address, $city, $number, $birthdate, $email, $password, $fileName);
+        }
+    }
 }
 ?>
+
 
 
 <!DOCTYPE html>

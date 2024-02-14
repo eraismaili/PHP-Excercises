@@ -1,14 +1,12 @@
 <?php
 require 'config.php';
 
-if (isset($_POST["submit"])) {
-    $email = mysqli_real_escape_string($conn, $_POST["email"]); // Escape input to prevent SQL injection
-    $password = mysqli_real_escape_string($conn, $_POST["password"]);
-
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+function loginUser($conn, $email, $password) {
+    $email = mysqli_real_escape_string($conn, $email);
+    $password = mysqli_real_escape_string($conn, $password);
 
     $result = mysqli_query($conn, "SELECT * FROM users WHERE email = '$email'");
-    
+
     if (!$result) {
         die("Query failed: " . mysqli_error($conn));
     }
@@ -16,12 +14,8 @@ if (isset($_POST["submit"])) {
     $row = mysqli_fetch_assoc($result);
 
     if (mysqli_num_rows($result) > 0) {
-        // Verify the password using password_verify
         if (password_verify($password, $row["password"])) {
-            // Start session
             session_start();
-            
-            //Me i rujt informacionet e userit ne sesion(pasi qe tbona login)
             $_SESSION["login"] = true;
             $_SESSION["id"] = $row["id"];
             $_SESSION["name"] = $row["name"];
@@ -32,17 +26,29 @@ if (isset($_POST["submit"])) {
             $_SESSION["birthdate"] = $row["birthdate"];
             $_SESSION["email"] = $row["email"];
             $_SESSION["password"] = $row["password"];
-            
-            // Redirect to profile page
+
             header("Location: profile.php");
             exit();
         } else {
-            echo "<script>alert('Wrong Password');</script>";
+            return "Wrong Password";
         }
     } else {
-        echo "<script>alert('User Not Registered');</script>";
+        return "User Not Registered";
     }
 }
+
+if (isset($_POST["submit"])) {
+    $email = $_POST["email"];
+    $password = $_POST["password"];
+
+    $loginResult = loginUser($conn, $email, $password);
+
+    if ($loginResult) {
+        echo "<script>alert('$loginResult');</script>";
+    }
+}
+?>
+
 
 ?>
 <!DOCTYPE html>
