@@ -92,13 +92,22 @@ function validateEmail($email, $conn) {
     return true;
 }
 
-function registerUser($conn, $name, $lastname, $address, $city, $number, $birthdate, $email, $password, $fileName) {
+function validateRole($role) {
+    global $roleErr;
+    if (empty($role)) {
+        $roleErr = "Role is required";
+        return false;
+    }
+    return true;
+}
+
+function registerUser($conn, $name, $lastname, $address, $city, $number, $birthdate, $email, $password, $fileName, $role) {
     global $registrationSuccess;
     // Hash the password
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     // Insert image file name into database
-    $query = "INSERT INTO users (name, lastname, address, city, number, birthdate, email, password, profile_picture) VALUES ('$name', '$lastname', '$address', '$city', '$number', '$birthdate', '$email', '$hashed_password', '$fileName')";
+    $query = "INSERT INTO users (name, lastname, address, city, number, birthdate, email, password, profile_picture, role) VALUES ('$name', '$lastname', '$address', '$city', '$number', '$birthdate', '$email', '$hashed_password', '$fileName', '$role')";
 
     if (mysqli_query($conn, $query)) {
         $registrationSuccess = true;
@@ -137,26 +146,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $number = $_POST["number"];
     $birthdate = $_POST["birthdate"];
     $email = $_POST["email"];
+    $role = $_POST["role"] ;
 
-    $nameValid = validateName($name);
-    $lastnameValid = validateLastName($lastname);
-    $addressValid = validateAddress($address);
-    $cityValid = validateCity($city);
-    $passwordValid = validatePassword($password);
-    $numberValid = validateNumber($number);
-    $birthdateValid = validateBirthdate($birthdate);
-    $emailValid = validateEmail($email, $conn);
-
-    if ($nameValid && $lastnameValid && $addressValid && $cityValid && $passwordValid && $numberValid && $birthdateValid && $emailValid) {
+    if ( validateName($name) && validateLastName($lastname)&& validateAddress($address)&& validateCity($city) && validatePassword($password) && validateNumber($number) && validateBirthdate($birthdate) && validateEmail($email, $conn) && validateRole($role)) {
         $fileName = handleFileUpload();
         if ($fileName) {
-            registerUser($conn, $name, $lastname, $address, $city, $number, $birthdate, $email, $password, $fileName);
+            registerUser($conn, $name, $lastname, $address, $city, $number, $birthdate, $email, $password, $fileName, $role);
         }
     }
 }
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -243,6 +242,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </script>
 </head>
 <body>
+    
     <div class="container">
         <h2>Registration</h2>
 
@@ -250,9 +250,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="success">You have successfully registered</div>
         <?php endif; ?>
         <form action="" method="post" autocomplete="off" enctype="multipart/form-data">
+
+        <label for="role">Role:</label>
+    <select name="role" id="role">
+    <option value="user" selected>User</option>
+    <option value="admin">Admin</option>
+    </select>
+    
             <label for="name">Name:</label>
             <input type="text" name="name" id="name" value="<?php echo isset($name) ? $name : ''; ?>">
             <span class="error"><?php echo $nameErr;?></span>
+
 
             <label for="lastname">Last Name:</label>
             <input type="text" name="lastname" id="lastname" value="<?php echo isset($lastname) ? $lastname : ''; ?>">
