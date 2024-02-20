@@ -1,6 +1,7 @@
 <?php
 require 'config.php';
 
+
 function loginUser($conn, $email, $password) {
     $email = mysqli_real_escape_string($conn, $email);
     $password = mysqli_real_escape_string($conn, $password);
@@ -26,14 +27,20 @@ function loginUser($conn, $email, $password) {
             $_SESSION["birthdate"] = $row["birthdate"];
             $_SESSION["email"] = $row["email"];
             $_SESSION["password"] = $row["password"];
+            $_SESSION["role"] = $row["role"];
 
-            header("Location: profile.php");
-            exit();
-        } else {
-            return "Wrong Password";
-        }
+    // Redirect based on role
+       if ($row["role"] === 'admin') {
+        header("Location: dashboard.php");
     } else {
-        return "User Not Registered";
+        header("Location: profile.php");
+    }
+    exit();
+    }else {
+    return "Wrong Password";
+    }
+    }else {
+    return "User Not Registered";
     }
 }
 
@@ -49,8 +56,6 @@ if (isset($_POST["submit"])) {
 }
 ?>
 
-
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
