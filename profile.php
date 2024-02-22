@@ -6,7 +6,7 @@ if (!isset($_SESSION["login"]) || $_SESSION["login"] !== true) {
     header("Location: login.php");
     exit();
 }
-
+include 'menu.php';
 // Check if the logout button is clicked
 if (isset($_POST['logout'])) {
     // Clear all session variables

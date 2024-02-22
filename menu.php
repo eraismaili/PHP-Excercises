@@ -18,13 +18,9 @@ if(!isset($_SESSION["login"]) || $_SESSION["login"] !== true) {
 if ($_SESSION["role"] === "admin") {
     $homeLink = "dashboard.php";
     $profileLink = "profile.php";
-    $pageTitle = "Dashboard";
-    $pageContent = "This is the admin dashboard.";
 } else {
-    $homeLink = "user_home.php";
+    $homeLink = "welcome.php";
     $profileLink = "profile.php";
-    $pageTitle = "Home";
-    $pageContent = "This is the home page.";
 }
 ?>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -34,17 +30,12 @@ if ($_SESSION["role"] === "admin") {
   </button>
   <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
     <div class="navbar-nav">
-      <a class="nav-item nav-link active" href="<?php echo $homeLink; ?>"><?php echo $pageTitle; ?> <span class="sr-only">(current)</span></a>
+      <a class="nav-item nav-link active" href="<?php echo $homeLink; ?>">Home <span class="sr-only">(current)</span></a>
       <a class="nav-item nav-link" href="<?php echo $profileLink; ?>">Profile</a>
       <a class="nav-item nav-link" href="logout.php">Logout</a>
     </div>
   </div>
 </nav>
-<div class="container">
-    <div class="welcome-message">
-        <h1>Welcome <?php echo $_SESSION["name"]; ?></h1>
-        <p><?php echo $pageContent; ?></p>
-    </div>
     <?php if ($_SESSION["role"] === "admin"): ?>
    
     <?php endif; ?>

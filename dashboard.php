@@ -7,11 +7,6 @@ if (!isset($_SESSION["login"]) || $_SESSION["login"] !== true) {
     exit();
 }
 
-// me check rolin nese useri eshte admin ose jo
-if ($_SESSION["role"] !== 'admin') {
-    header("Location: profile.php");
-    exit();
-}
 
 include 'menu.php';
 require 'config.php';
@@ -31,26 +26,47 @@ $users = mysqli_fetch_all($result, MYSQLI_ASSOC);
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
+       
+        <style>
         .table-container {
             margin-top: 50px;
+            width: 500px; /* Set table width to 100% */
+            overflow-x: auto; /* Enable horizontal scrolling if needed */
         }
         .table-custom {
             margin-bottom: 0;
             border-radius: 0;
+            width: 120%; /* Increase table width */
         }
         .table-custom th,
         .table-custom td {
             padding: 0.5rem;
+            white-space: nowrap; /* Prevent line breaks */
         }
+        /* Adjust width of specific columns */
+        .table-custom th:nth-child(8), /* Email */
+        .table-custom td:nth-child(8),
+        .table-custom th:nth-child(4), /* Address */
+        .table-custom td:nth-child(4),
+        .table-custom th:nth-child(9), /* Password */
+        .table-custom td:nth-child(9) {
+            max-width: 150px; /* Set maximum width for email, address, and password */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Show ellipsis for overflowing text */
+        }
+    </style>
+</head>
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>User Management</h2>
 
-    <div class="table-container">
-        <table class="table table-striped table-custom">
+    <h2 class="mt-5 text-center">User Management</h2>
+ 
+    <a class="row float-right btn btn-success mr-5 mb-2" href="add_user.php">Add New User</a>
+   
+    <div class="table-container col-12">
+        <table class="table table-striped table-custom mt-5 ml-3" style="width:95%;!important">
             <thead class="thead-dark">
                 <tr>
                     <th>ID</th>
@@ -89,13 +105,7 @@ $users = mysqli_fetch_all($result, MYSQLI_ASSOC);
         </table>
     </div>
 
-    <a class="btn btn-success" href="add_user.php">Add New User</a>
 
-    <br><br>
-    <form action="profile.php" method="post">
-        <button class="btn btn-secondary" type="submit" name="logout">Logout</button>
-    </form>
-</div>
 
 <!-- Bootstrap JS and dependencies -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

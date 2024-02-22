@@ -28,12 +28,12 @@ function loginUser($conn, $email, $password) {
             $_SESSION["email"] = $row["email"];
             $_SESSION["password"] = $row["password"];
             $_SESSION["role"] = $row["role"];
-
+            
     // Redirect based on role
        if ($row["role"] === 'admin') {
         header("Location: dashboard.php");
     } else {
-        header("Location: profile.php");
+        header("Location: welcome.php");
     }
     exit();
     }else {
