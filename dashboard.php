@@ -10,10 +10,13 @@ if (!isset($_SESSION["login"]) || $_SESSION["login"] !== true) {
 
 include 'menu.php';
 require 'config.php';
+require 'user.php';
 
-$query = "SELECT * FROM users";
-$result = mysqli_query($conn, $query);
-$users = mysqli_fetch_all($result, MYSQLI_ASSOC);
+// Create an instance of the User class
+$user = new User($conn);
+
+/// Retrieve all users using the getAllUsers method
+$users = $user->getAllUsers();
 ?>
 
 <!DOCTYPE html>
@@ -30,29 +33,29 @@ $users = mysqli_fetch_all($result, MYSQLI_ASSOC);
         <style>
         .table-container {
             margin-top: 50px;
-            width: 500px; /* Set table width to 100% */
-            overflow-x: auto; /* Enable horizontal scrolling if needed */
+            width: 500px; 
+            overflow-x: auto; 
         }
         .table-custom {
             margin-bottom: 0;
             border-radius: 0;
-            width: 120%; /* Increase table width */
+            width: 120%; 
         }
         .table-custom th,
         .table-custom td {
             padding: 0.5rem;
-            white-space: nowrap; /* Prevent line breaks */
+            white-space: nowrap; 
         }
-        /* Adjust width of specific columns */
-        .table-custom th:nth-child(8), /* Email */
+        
+        .table-custom th:nth-child(8),
         .table-custom td:nth-child(8),
-        .table-custom th:nth-child(4), /* Address */
+        .table-custom th:nth-child(4), 
         .table-custom td:nth-child(4),
-        .table-custom th:nth-child(9), /* Password */
+        .table-custom th:nth-child(9), 
         .table-custom td:nth-child(9) {
-            max-width: 150px; /* Set maximum width for email, address, and password */
+            max-width: 150px; 
             overflow: hidden;
-            text-overflow: ellipsis; /* Show ellipsis for overflowing text */
+            text-overflow: ellipsis; 
         }
     </style>
 </head>

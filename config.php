@@ -1,3 +1,9 @@
 <?php
-//session_start();
-$conn=mysqli_connect("localhost", "root", "", "users");
+
+require_once 'Database.php';
+
+$db = new Database();
+$conn = $db->getConnection();
+
+
+?>
