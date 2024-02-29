@@ -12,12 +12,23 @@ include 'menu.php';
 require 'config.php';
 require 'user.php';
 
-// Create an instance of the User class
+// instanca e klases users
 $user = new User($conn);
 
-/// Retrieve all users using the getAllUsers method
-$users = $user->getAllUsers();
+
+$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all_users';
+
+if ($filter === 'active_users') {
+    $users = $user->getActiveUsers();
+} elseif ($filter === 'inactive_users') {
+    $users = $user->getInactiveUsers();
+} else {
+  
+    $users = $user->getAllUsers();
+}
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -46,7 +57,6 @@ $users = $user->getAllUsers();
             padding: 0.5rem;
             white-space: nowrap; 
         }
-        
         .table-custom th:nth-child(8),
         .table-custom td:nth-child(8),
         .table-custom th:nth-child(4), 
@@ -66,7 +76,8 @@ $users = $user->getAllUsers();
 
     <h2 class="mt-5 text-center">User Management</h2>
  
-    <a class="row float-right btn btn-success mr-5 mb-2" href="add_user.php">Add New User</a>
+    <button class="row float-right btn btn-success btn-sm mr-5 mb-2" onclick="window.location='add_user.php'">Add New User </button>
+ 
    
     <div class="table-container col-12">
         <table class="table table-striped table-custom mt-5 ml-3" style="width:95%;!important">
@@ -82,6 +93,7 @@ $users = $user->getAllUsers();
                     <th>Email</th>
                     <th>Password</th>
                     <th>Role</th>
+                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -98,9 +110,12 @@ $users = $user->getAllUsers();
                     <td><?php echo $user['email']; ?></td>
                     <td><?php echo $user['password']; ?></td>
                     <td><?php echo $user['role']; ?></td>
+                    <td><?php echo $user['active']; ?></td>
                     <td>
                         <a class="btn btn-primary btn-sm" href="edit_user.php?id=<?php echo $user['id']; ?>">Edit</a>
                         <a class="btn btn-danger btn-sm" href="delete_user.php?id=<?php echo $user['id']; ?>">Delete</a>
+             
+
                     </td>
                 </tr>
                 <?php endforeach; ?>

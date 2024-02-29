@@ -1,7 +1,7 @@
 <?php
 require 'config.php';
 
-function addUser($conn, $name, $email, $password) {
+function addUser($conn, $name, $lastname, $address, $city, $number, $birthdate, $email, $role, $password  ) {
 
     $name = mysqli_real_escape_string($conn, $name);
     $lastname = mysqli_real_escape_string($conn, $lastname);
@@ -13,7 +13,8 @@ function addUser($conn, $name, $email, $password) {
     $email = mysqli_real_escape_string($conn, $email);
     $role = mysqli_real_escape_string($conn, $role);
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-    $sql = "INSERT INTO users (name, email, password) VALUES ('$name', '$email', '$hashedPassword')";
+    $sql = "INSERT INTO users (name, lastname, address, city, number, birthdate, email, role, password ) VALUES ('$name', '$lastname', '$address', '$city','$number','$birthdate', '$email', '$role', '$hashedPassword' )";
+
     
     if (mysqli_query($conn, $sql)) {
         return true; 
@@ -35,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $role = $_POST["role"] ;
 
    
-    if (addUser($conn, $name, $lastname, $address, $city, $password, $number, $birthdate, $email, $role )) {
+    if (addUser($conn, $name, $lastname, $address, $city, $number, $birthdate, $email, $role,  $password )) {
         header("Location: dashboard.php");
         exit();
     } else {
@@ -50,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add User</title>
-    <!-- Bootstrap CSS -->
+   
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -100,7 +101,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="container">
         <h1>Add New User</h1>
-        <form action="" method="post">
+        <form action="add_user.php" method="post">
             <div class="form-group">
                 <label for="name">Name:</label>
                 <input type="text" name="name" id="name" class="form-control" required>
@@ -108,10 +109,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="form-group">
                 <label for="lastname">Last Name:</label>
                 <input type="text" name="lastname" id="lastname" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" name="email" id="email" class="form-control" required>
             </div>
             <div class="form-group">
                 <label for="address">Address:</label>
@@ -135,7 +132,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <div class="form-group">
                 <label for="email">Email:</label>
-                <input type="text" name="email" id="email" class="form-control" required>
+                <input type="email" name="email" id="email" class="form-control" required>
             </div>
             <button type="submit" class="btn btn-primary">Add User</button>
         </form>

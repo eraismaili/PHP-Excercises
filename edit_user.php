@@ -1,7 +1,7 @@
 <?php
 require 'config.php';
 
-function editUser($conn, $id, $name, $lastname, $address, $city, $number, $birthdate, $email, $role) {
+function editUser($conn, $id, $name, $lastname, $address, $city, $number, $birthdate, $email, $role, $active) {
     $id = mysqli_real_escape_string($conn, $id);
     $name = mysqli_real_escape_string($conn, $name);
     $lastname = mysqli_real_escape_string($conn, $lastname);
@@ -11,18 +11,26 @@ function editUser($conn, $id, $name, $lastname, $address, $city, $number, $birth
     $birthdate = mysqli_real_escape_string($conn, $birthdate);
     $email = mysqli_real_escape_string($conn, $email);
     $role= mysqli_real_escape_string($conn, $role);
+    $active=mysqli_real_escape_string($conn, $active);
 
 
 
-    $sql = "UPDATE users SET name='$name', lastname='$lastname', address='$address', city='$city', number='$number', birthdate='$birthdate', email='$email',  role='$role' WHERE id='$id'";
-    
+    $sql = "UPDATE users SET name='$name', lastname='$lastname', address='$address', city='$city', number='$number', birthdate='$birthdate', email='$email',  active='$active', role='$role' WHERE id='$id' ";
+
     if (mysqli_query($conn, $sql)) {
         return true; 
     } else {
-        return false; 
+       var_dump(mysqli_error($conn));
+       die();
     }
 }
- 
+
+$id = $_GET['id'];
+
+$query = "SELECT * FROM users WHERE id='$id'";
+$result = mysqli_query($conn, $query);
+$user = mysqli_fetch_assoc($result);
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST['id'];
     $name = $_POST['name'];
@@ -32,24 +40,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $number = $_POST['number'];
     $birthdate = $_POST['birthdate'];
     $email = $_POST['email'];
-    $password = $_POST['password'];
     $role = $_POST['role'];
-
+    $active=$_POST['active'];
  
-    if (editUser($conn, $id, $name,  $lastname, $address, $city, $number, $birthdate, $email, $role)) {
+    if (editUser($conn, $id, $name, $lastname, $address, $city, $number, $birthdate, $email, $role, $active)) {
         header("Location: dashboard.php");
         exit();
     } else {
+
         echo "Error updating user.";
     }
-} else {
-
-    $id = $_GET['id'];
-
-    $query = "SELECT * FROM users WHERE id='$id'";
-    $result = mysqli_query($conn, $query);
-    $user = mysqli_fetch_assoc($result);
-}
+} 
 ?>
 
 <!DOCTYPE html>
@@ -124,11 +125,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="email" name="email" id="email" value="<?php echo $user['email']; ?>">
             <label for="role">Role:</label>
             <input type="text" name="role" id="role" value="<?php echo $user['role']; ?>">
+            <label for="active">Status:</label>
+            <input type="value" name="active" id="active" <?php echo ($user['active'] == 1) ? 'checked' : ''; ?>>
+
             <button type="submit">Update User</button>
         </form>
     </div>
-</body>
-</html>
-
 </body>
 </html>

@@ -1,6 +1,6 @@
 <?php
 require 'config.php';
-
+require 'Validation.php';
 class RegistrationForm {
     private $nameErr = '';
     private $lastnameErr = '';
@@ -17,94 +17,7 @@ class RegistrationForm {
         $this->conn = $conn;
     }
 
-    public function validateName($name) {
-        if (empty($name)) {
-            $this->nameErr = "Name is required";
-            return false;
-        }
-        return true;
-    }
-    public function validateLastName($lastname) {
-        if (empty($lastname)) {
-            $this->lastnameErr = "Lastname is required";
-            return false;
-        }
-        return true;
-    }
-
-    public function validateAddress($address) {
-        if (empty($address)) {
-            $this->addressErr = "Address is required";
-            return false;
-        }
-        return true;
-    }
-
-    public function validateCity($city) {
-        if (empty($city)) {
-            $this->cityErr = "City is required";
-            return false;
-        }
-        return true;
-    }
-
-public function validatePassword($password) {
-        if (empty($password) || (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{6,}$/', $password))) {
-            $this->passwordErr = "Password must contain at least 6 characters with 1 uppercase letter, 1 lowercase letter, and 1 special character";
-            return false;
-        }
-        return true;
-    }
-
-    public function validateNumber($number) {
-        if (empty($number)) {
-            $this->numberErr = "Number is required";
-            return false;
-        } elseif (!preg_match("/^\+?[0-9]{7,15}$/", $number)) {
-            $this->numberErr = "Invalid phone number format";
-            return false;
-        }
-        return true;
-    }
-
-
-    public function validateBirthdate($birthdate) {
-        if (empty($birthdate)) {
-            $this->birthdateErr = "BirthDate is required";
-            return false;
-        }
-        return true;
-    }
-
-
-    public function validateEmail($email) {
-        if (empty($email)) {
-            $this->emailErr = "Email is required";
-            return false;
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->emailErr = "Invalid email format";
-            return false;
-        } else {
-            $email = mysqli_real_escape_string($this->conn, $email);
-
-            // Check if the email is already registered
-            $check_query = "SELECT * FROM users WHERE email='$email'";
-            $result = mysqli_query($this->conn, $check_query);
-            if (mysqli_num_rows($result) > 0) {
-                $this->emailErr = "This email is already registered.";
-                return false;
-            }
-        }
-        return true;
-    }
     
-    public function validateRole($role) {
-        if (empty($role)) {
-            $this->roleErr = "Role is required";
-            return false;
-        }
-        return true;
-    }
     public function registerUser($name, $lastname, $address, $city, $number, $birthdate, $email, $password, $fileName, $role) {
         
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -121,7 +34,7 @@ public function validatePassword($password) {
 
     public function handleFileUpload() {
         if ($_FILES['profilepicture']['name']) {
-            
+          
             $targetDir = "uploads/";
             $fileName = basename($_FILES["profilepicture"]["name"]);
             $targetFilePath = $targetDir . $fileName;
@@ -138,7 +51,6 @@ public function validatePassword($password) {
             return null;
         }
     }
-
 
     public function isRegistrationSuccessful() {
         return $this->registrationSuccess;
@@ -157,7 +69,6 @@ public function validatePassword($password) {
         ];
     }
 }
-
 
 $registrationForm = new RegistrationForm($conn);
 
