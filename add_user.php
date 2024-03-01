@@ -1,5 +1,6 @@
 <?php
 require 'config.php';
+require 'validation.php';
 
 function addUser($conn, $name, $lastname, $address, $city, $number, $birthdate, $email, $role, $password  ) {
 

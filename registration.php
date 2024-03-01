@@ -1,23 +1,18 @@
 <?php
 require 'config.php';
-require 'Validation.php';
+require 'validation.php';
+
 class RegistrationForm {
-    private $nameErr = '';
-    private $lastnameErr = '';
-    private $addressErr = '';
-    private $cityErr = '';
-    private $numberErr = '';
-    private $birthdateErr = '';
-    private $emailErr = '';
-    private $passwordErr = '';
+    private $conn;
+    public $validation;
+    private $errors = [];
     private $registrationSuccess = false;
-    private $conn; 
 
     public function __construct($conn) {
         $this->conn = $conn;
+        $this->validation = new Validation();
     }
-
-    
+   
     public function registerUser($name, $lastname, $address, $city, $number, $birthdate, $email, $password, $fileName, $role) {
         
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -27,14 +22,12 @@ class RegistrationForm {
         if (mysqli_query($this->conn, $query)) {
             $this->registrationSuccess = true;
         } else {
-            echo "Error: " . $query . "<br>" . mysqli_error($this->conn);
+            $this->errors['database'] = "Error: " . $query . "<br>" . mysqli_error($this->conn);
         }
     }
 
-
     public function handleFileUpload() {
         if ($_FILES['profilepicture']['name']) {
-          
             $targetDir = "uploads/";
             $fileName = basename($_FILES["profilepicture"]["name"]);
             $targetFilePath = $targetDir . $fileName;
@@ -43,11 +36,11 @@ class RegistrationForm {
             if (move_uploaded_file($_FILES["profilepicture"]["tmp_name"], $targetFilePath)) {
                 return $fileName;
             } else {
-                echo "Sorry, there was an error uploading your file.";
+                $this->errors['file'] = "Sorry, there was an error uploading your file.";
                 return null;
             }
         } else {
-            echo 'Please select a file.';
+            $this->errors['file'] = 'Please select a file.';
             return null;
         }
     }
@@ -55,20 +48,8 @@ class RegistrationForm {
     public function isRegistrationSuccessful() {
         return $this->registrationSuccess;
     }
-
-    public function getErrors() {
-        return [
-            'nameErr' => $this->nameErr,
-            'lastnameErr' => $this->lastnameErr,
-            'addressErr' => $this->addressErr,
-            'cityErr' => $this->cityErr,
-            'numberErr' => $this->numberErr,
-            'birthdateErr' => $this->birthdateErr,
-            'emailErr' => $this->emailErr,
-            'passwordErr' => $this->passwordErr,
-        ];
-    }
 }
+
 
 $registrationForm = new RegistrationForm($conn);
 
@@ -83,23 +64,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST["email"];
     $role = $_POST["role"];
 
-    if ($registrationForm->validateName($name) && 
-        $registrationForm->validateLastName($lastname) && 
-        $registrationForm->validateAddress($address) && 
-        $registrationForm->validateCity($city) && 
-        $registrationForm->validatePassword($password) && 
-        $registrationForm->validateNumber($number) && 
-        $registrationForm->validateBirthdate($birthdate) && 
-        $registrationForm->validateEmail($email) && 
-        $registrationForm->validateRole($role)) {
+    list($valid, $errors) = $registrationForm->validation->validateFormData($name, $lastname, $address, $city, $number, $birthdate, $email, $password, $role, $conn);
 
+   if ($valid) {
         $fileName = $registrationForm->handleFileUpload();
         if ($fileName) {
             $registrationForm->registerUser($name, $lastname, $address, $city, $number, $birthdate, $email, $password, $fileName, $role);
         }
     }
+    
 }
+
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -203,36 +180,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <label for="name">Name:</label>
             <input type="text" name="name" id="name" value="<?php echo isset($name) ? $name : ''; ?>">
-            <span class="error"><?php echo $registrationForm->getErrors()['nameErr'];?></span>
+            <span class="error"><?php if (isset($errors['nameErr'])) echo $errors['nameErr']; ?></span>
 
-
-            <label for="lastname">Last Name:</label>
+            <label for="name">Last Name:</label>
             <input type="text" name="lastname" id="lastname" value="<?php echo isset($lastname) ? $lastname : ''; ?>">
-            <span class="error"><?php echo $registrationForm->getErrors()['lastnameErr'];?></span>
+            <span class="error"><?php if (isset($errors['lastnameErr'])) echo $errors['lastnameErr']; ?></span>
 
             <label for="address">Address:</label>
             <input type="text" name="address" id="address" value="<?php echo isset($address) ? $address : ''; ?>">
-            <span class="error"><?php echo $registrationForm->getErrors()['addressErr'];?></span>
+            <span class="error"><?php if (isset($errors['addressErr'])) echo $errors['addressErr']; ?></span>
 
             <label for="city">City:</label>
             <input type="text" name="city" id="city" value="<?php echo isset($city) ? $city : ''; ?>">
-            <span class="error"><?php echo $registrationForm->getErrors()['cityErr'];?></span>
+            <span class="error"><?php if (isset($errors['CityErr'])) echo $errors['CityErr']; ?></span>
 
             <label for="number">Number:</label>
             <input type="text" name="number" id="number" value="<?php echo isset($number) ? $number : ''; ?>">
-            <span class="error"><?php echo $registrationForm->getErrors()['numberErr'];?></span>
+            <span class="error"><?php if (isset($errors['numberErr'])) echo $errors['numberErr']; ?></span>
+
 
             <label for="birthdate">Birth Date:</label>
             <input type="text" name="birthdate" id="birthdate" value="<?php echo isset($birthdate) ? $birthdate : ''; ?>">
-            <span class="error"><?php echo $registrationForm->getErrors()['birthdateErr'];?></span>
+            <span class="error"><?php if (isset($errors['birthdateErr'])) echo $errors['birthdateErr']; ?></span>
+
 
             <label for="email">Email:</label>
             <input type="text" name="email" id="email" value="<?php echo isset($email) ? $email : ''; ?>">
-            <span class="error"><?php echo $registrationForm->getErrors()['emailErr'];?></span>
+            <span class="error"><?php if (isset($errors['emailErr'])) echo $errors['emailErr']; ?></span>
+
 
             <label for="password">Password:</label>
             <input type="password" name="password" id="password">
-            <span class="error"><?php echo $registrationForm->getErrors()['passwordErr'];?></span>
+            <span class="error"><?php if (isset($errors['passwordErr'])) echo $errors['passwordErr']; ?></span>
 
             <label for="profilepicture">Profile Picture:</label>
             <input type="file" name="profilepicture" id="profilepicture">
